@@ -1,4 +1,4 @@
-import { makeAutoObservable, runInAction } from 'mobx';
+import { makeAutoObservable, action } from 'mobx';
 import { IGame, IGameConcrete } from '../api/models';
 import { fetchingConcreteGame, fetchingGames } from '../api/rest';
 
@@ -44,22 +44,28 @@ class Games {
 
     getGame = (id?: string) => {
         this.loadingConcreteGame = true;
-        fetchingConcreteGame(id)
-            .then((data) => {
-                runInAction(() => (this.loadingConcreteGame = false));
+        fetchingConcreteGame(id).then(
+            action('fetchingSuccsess', (data) => {
                 this.setGame(data);
+                this.loadingConcreteGame = false;
+            }),
+            action('fetchingError', (msgError) => {
+                this.error = msgError;
             })
-            .catch((msg) => runInAction(() => (this.error = msg)));
+        );
     };
 
     getGames = () => {
         this.loading = true;
-        fetchingGames()
-            .then((data) => {
-                runInAction(() => (this.loading = false));
+        fetchingGames().then(
+            action('fetchingSuccsess', (data) => {
                 this.setGames(data);
+                this.loading = false;
+            }),
+            action('fetchingError', (msgError) => {
+                this.error = msgError;
             })
-            .catch((msg) => runInAction(() => (this.error = msg)));
+        );
     };
 }
 
